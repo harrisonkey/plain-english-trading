@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/*.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
-  ],
+  "functions": {
+    "api/*.js": {
+      "runtime": "@vercel/node"
+    }
+  },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    { "src": "/api/scan", "dest": "/scan.js" },
+    { "src": "/api/analyze", "dest": "/analyze.js" },
+    { "src": "/api/positions", "dest": "/positions.js" },
+    { "src": "/api/screenshot", "dest": "/screenshot.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
