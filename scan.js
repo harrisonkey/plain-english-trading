@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     const spy10High = Math.max(...spyBars.slice(0,10).map(b=>b.h||0));
     const spy10Low = Math.min(...spyBars.slice(0,10).map(b=>b.l||Infinity));
     const spy10Range = spy10Low > 0 ? ((spy10High - spy10Low) / spy10Low) * 100 : 5;
-    const marketIsChoppy = spy10Range < 3;
+    const marketIsChoppy = spy10Range < 1.5;
 
     if (marketIsChoppy) {
       return res.status(200).json({
