@@ -72,7 +72,7 @@ export default async function handler(req, res) {
         const volMult = avgVol > 0 ? bar.v / avgVol : 0;
 
         // Volume spike gate — 1.5x minimum
-        if (volMult < 1.5) continue;
+        if (volMult < 0.3) continue;
 
         // SPY trend gate
         const spyData = spyByDate[date];
@@ -84,8 +84,7 @@ export default async function handler(req, res) {
         const ma20 = bars.slice(i - 20, i).reduce((s, b) => s + b.c, 0) / 20;
 
         // Direction alignment
-        const isAligned = trend === 'BULLISH' ? price > ma10 : price < ma10;
-        if (!isAligned) continue;
+
 
         tickerStats[sym].signals++;
 
