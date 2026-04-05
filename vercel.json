@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "*.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/scan", "dest": "/scan.js" },
+    { "src": "/api/analyze", "dest": "/analyze.js" },
+    { "src": "/api/positions", "dest": "/positions.js" },
+    { "src": "/api/screenshot", "dest": "/screenshot.js" },
+    { "src": "/api/backtest", "dest": "/backtest.js" },
+    { "src": "/api/outcomes", "dest": "/outcomes.js" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/index.html", "dest": "/index.html" }
+  ]
+}
