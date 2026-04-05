@@ -93,7 +93,7 @@ export default async function handler(req, res) {
             const hi = Math.max(...spySlice.map(b => b.h || 0));
             const lo = Math.min(...spySlice.map(b => b.l || Infinity));
             const range = lo > 0 ? ((hi - lo) / lo) * 100 : 5;
-            if (range < 3) continue; // choppy market — skip
+            if (range < 1.5) continue; // choppy market — skip
           }
 
           const ma10 = bars.slice(i - 10, i).reduce((s, b) => s + b.c, 0) / 10;
