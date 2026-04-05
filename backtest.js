@@ -73,8 +73,7 @@ const volMult = avgVol > 0 ? bar.v / avgVol : 1.5;
 
         // SPY trend gate
         const spyData = spyByDate[date];
-        if (!spyData) continue;
-        const trend = spyData.trend;
+const trend = spyData ? spyData.trend : 'BULLISH';
 
         // Moving averages
         const ma10 = bars.slice(i - 10, i).reduce((s, b) => s + b.c, 0) / 10;
