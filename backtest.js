@@ -69,10 +69,7 @@ export default async function handler(req, res) {
 
         // Calculate 20-day average volume
         const avgVol = bars.slice(i - 20, i).reduce((s, b) => s + (b.v || 0), 0) / 20;
-        const volMult = avgVol > 0 ? bar.v / avgVol : 0;
-
-        // Volume spike gate — 1.5x minimum
-        if (volMult < 0.3) continue;
+const volMult = avgVol > 0 ? bar.v / avgVol : 1.5;
 
         // SPY trend gate
         const spyData = spyByDate[date];
