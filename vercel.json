@@ -1,11 +1,15 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "*.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
   "routes": [
-    { "src": "/api/scan", "dest": "/scan.js" },
-    { "src": "/api/analyze", "dest": "/analyze.js" },
-    { "src": "/api/backtest", "dest": "/backtest.js" },
-    { "src": "/api/outcomes", "dest": "/outcomes.js" },
-    { "src": "/api/alert", "dest": "/alert.js" },
+    { "src": "/api/scan", "methods": ["GET", "POST", "OPTIONS"], "dest": "/scan.js" },
+    { "src": "/api/analyze", "methods": ["GET", "POST", "OPTIONS"], "dest": "/analyze.js" },
+    { "src": "/api/backtest", "methods": ["GET", "POST", "OPTIONS"], "dest": "/backtest.js" },
+    { "src": "/api/outcomes", "methods": ["GET", "POST", "OPTIONS"], "dest": "/outcomes.js" },
+    { "src": "/api/alert", "methods": ["GET", "POST", "OPTIONS"], "dest": "/alert.js" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/index.html", "dest": "/index.html" }
   ]
