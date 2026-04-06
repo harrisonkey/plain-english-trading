@@ -87,10 +87,7 @@ export default async function handler(req, res) {
         const spyTrend = spyTrendByDate[date] || 'BULLISH';
 
         // Only take trades aligned with both stock AND market direction
-        const type = spyTrend === 'BULLISH' && bullish ? 'CALL'
-                   : spyTrend === 'BEARISH' && bearish ? 'PUT'
-                   : null;
-        if (!type) continue;
+        const type = bullish ? 'CALL' : 'PUT';
 
         // Nearest OTM strike
         const strike = type === 'CALL'
