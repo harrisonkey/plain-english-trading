@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plain English Trading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--surface:#13161e;--card:#191d27;--border:#252933;--border2:#2e3444;
+  --text:#e8eaf0;--muted:#8891a8;--muted2:#5a6278;
+  --green:#00d97e;--green-dim:#00d97e22;--green-border:#00d97e44;
+  --red:#ff4d6a;--red-dim:#ff4d6a22;--red-border:#ff4d6a44;
+  --amber:#f5a623;--amber-dim:#f5a62322;--amber-border:#f5a62344;
+  --blue:#4e9eff;--blue-dim:#4e9eff22;--blue-border:#4e9eff44;
+  --brand:#4e9eff;--brand2:#7b6aff;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.3px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--brand),var(--brand2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.badge{font-size:11px;background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);border-radius:20px;padding:2px 10px;font-weight:600}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-label{font-size:12px;color:var(--muted)}
+
+/* MARKET STRIP */
+.mstrip{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;gap:24px;overflow-x:auto}
+.mstrip-item{display:flex;flex-direction:column;gap:2px;min-width:fit-content}
+.mstrip-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
+.mstrip-val{font-size:14px;font-weight:600;font-family:var(--mono)}
+.mstrip-sub{font-size:11px;color:var(--muted)}
+.bull{color:var(--green)} .bear{color:var(--red)} .neutral{color:var(--muted)}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+.tab{background:none;border:none;color:var(--muted);padding:14px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+
+/* LAYOUT */
+.main{padding:24px;max-width:1100px;margin:0 auto}
+.pane{display:none} .pane.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card+.card{margin-top:12px}
+.card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:14px}
+
+/* GRID HELPERS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* STAT BOX */
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center}
+.stat-l{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:6px}
+.stat-v{font-size:22px;font-weight:700;font-family:var(--mono)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
+.btn:hover{opacity:.85} .btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+.btn-green{background:var(--green);color:#000}
+.btn-red{background:var(--red)}
+
+/* INPUT */
+.input{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;font-family:var(--sans);width:100%;transition:border-color .15s}
+.input:focus{border-color:var(--brand)}
+.select{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);cursor:pointer}
+
+/* PICK CARD */
+.pick{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.pick-header{padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.pick-sym{font-size:18px;font-weight:700;font-family:var(--mono)}
+.pick-name{font-size:12px;color:var(--muted)}
+.pick-price{font-size:16px;font-weight:600;font-family:var(--mono);margin-left:auto}
+.pick-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.04em}
+.badge-buy{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge-skip{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border)}
+.badge-high{background:var(--brand2)22;color:var(--brand2);border:1px solid var(--brand2)44}
+.badge-med{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-hot{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.pick-body{padding:0 20px 20px;display:none}
+.pick.open .pick-body{display:block}
+.action-box{background:var(--brand)11;border:1px solid var(--brand)33;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.7;color:var(--text)}
+.why-box{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;line-height:1.7}
+.trade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.tg-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.tg-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);margin-bottom:4px}
+.tg-val{font-size:14px;font-weight:600;font-family:var(--mono)}
+.flags{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.flag-box{border-radius:8px;padding:12px}
+.flag-green{background:var(--green-dim);border:1px solid var(--green-border)}
+.flag-red{background:var(--red-dim);border:1px solid var(--red-border)}
+.flag-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.flag-title.g{color:var(--green)} .flag-title.r{color:var(--red)}
+.flag-item{font-size:12px;color:var(--text);line-height:1.5;padding:2px 0}
+.risk-bar{background:var(--surface);border-radius:4px;height:6px;margin-bottom:4px;overflow:hidden}
+.risk-fill{height:100%;border-radius:4px;transition:width .3s}
+.disc{font-size:11px;color:var(--muted2);padding-top:12px;border-top:1px solid var(--border);line-height:1.6}
+.journal-btn{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);border-radius:8px;padding:10px;width:100%;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:4px;transition:background .15s}
+.journal-btn:hover{background:var(--green-dim);opacity:.8}
+
+/* STATES */
+.loading{text-align:center;padding:60px 20px;color:var(--muted)}
+.spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+.error{background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;padding:14px;color:var(--red);font-size:13px}
+.success{background:var(--green-dim);border:1px solid var(--green-border);border-radius:10px;padding:14px;color:var(--green);font-size:13px}
+.info{background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:10px;padding:14px 16px;color:var(--text);font-size:13px;line-height:1.7}
+.warn{background:var(--amber-dim);border:1px solid var(--amber-border);border-radius:10px;padding:14px 16px;color:var(--text);font-size:13px;line-height:1.7}
+
+/* JOURNAL */
+.j-table{width:100%;border-collapse:collapse}
+.j-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted2);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.j-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+.j-table tr:last-child td{border-bottom:none}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-win{background:var(--green-dim);color:var(--green)}
+.tag-loss{background:var(--red-dim);color:var(--red)}
+.tag-open{background:var(--blue-dim);color:var(--blue)}
+
+/* BACKTEST */
+.bt-curve{width:100%;height:160px;margin-bottom:8px}
+.bt-curve svg{width:100%;height:100%}
+.tp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tp-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;display:flex;justify-content:space-between;align-items:center}
+.tp-sym{font-size:14px;font-weight:700;font-family:var(--mono)}
+.tp-trades{font-size:11px;color:var(--muted)}
+.tp-wr{font-size:14px;font-weight:700;font-family:var(--mono)}
+.mo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mo-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+
+/* ALERTS */
+.alert-card{border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:13px;line-height:1.7}
+.alert-high{background:var(--red-dim);border:1px solid var(--red-border)}
+.alert-med{background:var(--amber-dim);border:1px solid var(--amber-border)}
+.alert-low{background:var(--green-dim);border:1px solid var(--green-border)}
+
+/* LEARNING */
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;display:flex;justify-content:space-between;align-items:center}
+.score-hot{border-color:var(--green-border);background:var(--green-dim)}
+.score-cold{border-color:var(--red-border);background:var(--red-dim)}
+
+@media(max-width:700px){
+  .main{padding:16px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(2,1fr)}
+  .trade-grid{grid-template-columns:repeat(2,1fr)}
+  .flags{grid-template-columns:1fr}
+  .mstrip{gap:16px;padding:10px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    Plain English Trading
+  </div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <span class="live-label" id="liveLabel">connecting...</span>
+  </div>
+</div>
+
+<div class="mstrip" id="mstrip">
+  <div class="mstrip-item"><div class="mstrip-label">SPY</div><div class="mstrip-val" id="mSpy">—</div><div class="mstrip-sub">S&P 500</div></div>
+  <div class="mstrip-item"><div class="mstrip-label">Trend</div><div class="mstrip-val" id="mTrend">—</div><div class="mstrip-sub" id="mTrendSub">vs 20-day MA</div></div>
+  <div class="mstrip-item"><div class="mstrip-label">VIX</div><div class="mstrip-val" id="mVix">—</div><div class="mstrip-sub">fear index</div></div>
+  <div class="mstrip-item"><div class="mstrip-label">Today's play</div><div class="mstrip-val" id="mPlay">—</div><div class="mstrip-sub">based on trend</div></div>
+  <div class="mstrip-item"><div class="mstrip-label">My balance</div><div class="mstrip-val" id="mBal">$5,000</div><div class="mstrip-sub"><a href="#" onclick="editBal();return false" style="color:var(--muted);text-decoration:none">edit</a></div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('scan',this)">🔍 Daily Scan</button>
+  <button class="tab" onclick="sw('analyze',this)">🎯 Any Ticker</button>
+  <button class="tab" onclick="sw('journal',this)">📓 Journal</button>
+  <button class="tab" onclick="sw('alerts',this)">🔔 Alerts</button>
+  <button class="tab" onclick="sw('backtest',this)">📈 Backtest</button>
+  <button class="tab" onclick="sw('learning',this)">🧠 Learning</button>
+</div>
+
+<div class="main">
+
+<!-- SCAN -->
+<div id="pane-scan" class="pane active">
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px">Today's options plays</div>
+        <div style="font-size:13px;color:var(--muted)">Scans 90 small-cap tickers with real Polygon data. Applies volume, MA, and trend filters. HOT tickers from your history get priority.</div>
+      </div>
+      <button class="btn" id="scanBtn" onclick="runScan()">Find Today's Plays</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)">✓ SPY trend gate</span>
+      <span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)">✓ 1.2x+ volume spike</span>
+      <span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)">✓ MA crossover signal</span>
+      <span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)">✓ 90 tickers scanned</span>
+      <span style="font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted)">✓ Learning system active</span>
+    </div>
+  </div>
+  <div id="scanOut">
+    <div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Hit "Find Today's Plays" to start</div><div style="font-size:12px;color:var(--muted2);margin-top:6px">Takes 15-20 seconds — scanning 90 tickers with real market data</div></div>
+  </div>
+</div>
+
+<!-- ANALYZE -->
+<div id="pane-analyze" class="pane">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px">Analyze any ticker</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Get a specific trade recommendation for any stock — strike, expiry, entry, target, stop.</div>
+    <div style="display:flex;gap:10px">
+      <input class="input" id="analyzeInput" placeholder="Enter ticker — e.g. OXY, RKLB, SOUN" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')runAnalyze()" style="max-width:300px"/>
+      <button class="btn" id="analyzeBtn" onclick="runAnalyze()">Analyze</button>
+    </div>
+  </div>
+  <div id="analyzeOut">
+    <div class="empty"><div class="empty-icon">🎯</div><div class="empty-title">Enter a ticker above to get a trade recommendation</div></div>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div id="pane-journal" class="pane">
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:17px;font-weight:700">Trade journal</div>
+      <button class="btn btn-sm btn-ghost" onclick="clearJournal()">Clear all</button>
+    </div>
+    <div class="g4" id="jStats" style="margin-bottom:16px">
+      <div class="stat"><div class="stat-l">Total trades</div><div class="stat-v" id="jTotal">0</div></div>
+      <div class="stat"><div class="stat-l">Win rate</div><div class="stat-v" id="jWR">—</div></div>
+      <div class="stat"><div class="stat-l">Simulated P&L</div><div class="stat-v" id="jPnl">$0</div></div>
+      <div class="stat"><div class="stat-l">Open trades</div><div class="stat-v" id="jOpen">0</div></div>
+    </div>
+    <div id="jTable"></div>
+  </div>
+</div>
+
+<!-- ALERTS -->
+<div id="pane-alerts" class="pane">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px">Position alerts</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Checks your open journal positions against live prices. Tells you when to sell or when to cut losses.</div>
+    <button class="btn" id="alertBtn" onclick="runAlerts()">Check my positions now</button>
+  </div>
+  <div id="alertOut">
+    <div class="empty"><div class="empty-icon">🔔</div><div class="empty-title">Add trades to your journal to start getting alerts</div><div style="font-size:12px;color:var(--muted2);margin-top:6px">Alerts check live stock prices and tell you when to take action on your options</div></div>
+  </div>
+</div>
+
+<!-- BACKTEST -->
+<div id="pane-backtest" class="pane">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px">Historical backtest</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Runs the MA crossover signal against real Polygon historical data. Shows what the strategy would have returned. Uses MA crossover entry signals — fires when the 10-day MA crosses the 20-day MA.</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <select class="select" id="btMonths">
+        <option value="1">Last 1 month</option>
+        <option value="2">Last 2 months</option>
+        <option value="3" selected>Last 3 months</option>
+        <option value="6">Last 6 months</option>
+      </select>
+      <button class="btn" id="btBtn" onclick="runBacktest()">Run Backtest</button>
+    </div>
+  </div>
+  <div class="warn" style="margin-bottom:14px"><strong style="color:var(--amber)">Important:</strong> Past performance does not predict future results. Option premiums are estimated. This is directional evidence only, not proof the strategy works.</div>
+  <div id="btOut">
+    <div class="empty"><div class="empty-icon">📈</div><div class="empty-title">Hit "Run Backtest" to see historical performance</div><div style="font-size:12px;color:var(--muted2);margin-top:6px">Takes 15-25 seconds</div></div>
+  </div>
+</div>
+
+<!-- LEARNING -->
+<div id="pane-learning" class="pane">
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px">AI learning system</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Every trade outcome you log teaches the app which tickers work. HOT tickers get prioritized in the daily scan. COLD tickers get skipped. Gets smarter with every trade.</div>
+    <button class="btn btn-ghost" onclick="loadLearning()">Load performance data</button>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Log a trade outcome</div>
+    <div class="g3" style="margin-bottom:12px">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Ticker</div><input class="input" id="loSym" placeholder="OXY" oninput="this.value=this.value.toUpperCase()" maxlength="8"/></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Type</div><select class="select" id="loType" style="width:100%"><option>CALL</option><option>PUT</option></select></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Outcome</div><select class="select" id="loOutcome" style="width:100%"><option value="WIN">WIN (+100%)</option><option value="LOSS">LOSS (-50%)</option><option value="EXPIRED">EXPIRED (-100%)</option></select></div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Entry date</div><input class="input" id="loDate" type="date"/></div>
+      <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Actual P&L %</div><input class="input" id="loPnl" type="number" placeholder="100"/></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="btn btn-green btn-sm" id="loBtn" onclick="logOutcome()">Log outcome</button>
+      <span id="loMsg" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+  </div>
+  <div id="learningOut">
+    <div class="empty"><div class="empty-icon">🧠</div><div class="empty-title">Hit "Load performance data" to see what the system has learned</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const BASE = window.location.hostname==='localhost'?'http://localhost:3000':window.location.origin;
+let bal=5000, journal=[], spyData={};
+try{bal=parseFloat(localStorage.getItem('pet_bal')||'5000');journal=JSON.parse(localStorage.getItem('pet_journal')||'[]')}catch(e){}
+document.getElementById('loDate').value=new Date().toISOString().split('T')[0];
+updateBalDisplay();
+renderJournal();
+checkLive();
+
+// ── TAB SWITCHING ──────────────────────────────────────────────────────────
+function sw(id,btn){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── LIVE CHECK ─────────────────────────────────────────────────────────────
+async function checkLive(){
+  try{
+    const r=await fetch(`${BASE}/api/scan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ping:true})});
+    // Just checking connectivity — we parse the meta from any scan response
+    document.getElementById('liveLabel').textContent='live data connected';
+  } catch(e){
+    document.getElementById('liveLabel').textContent='offline';
+  }
+}
+
+// ── BALANCE ────────────────────────────────────────────────────────────────
+function updateBalDisplay(){
+  document.getElementById('mBal').textContent='$'+bal.toLocaleString();
+}
+function editBal(){
+  const v=prompt('Enter your account balance:',bal);
+  if(v&&!isNaN(parseFloat(v))){bal=parseFloat(v);localStorage.setItem('pet_bal',bal);updateBalDisplay();}
+}
+
+// ── DAILY SCAN ─────────────────────────────────────────────────────────────
+async function runScan(){
+  const btn=document.getElementById('scanBtn');
+  btn.disabled=true;btn.textContent='Scanning...';
+  document.getElementById('scanOut').innerHTML=`<div class="loading"><div class="spin"></div><p style="color:var(--muted)">Scanning 90 tickers with real Polygon data...<br>Running filters · Applying learning system<br>Takes 15-20 seconds</p></div>`;
+  try{
+    const r=await fetch(`${BASE}/api/scan`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    // Store spy data
+    spyData={trend:d.spyTrend,price:d.spyPrice,vix:d.vix};
+    updateStrip(d);
+    renderScan(d);
+  }catch(e){
+    document.getElementById('scanOut').innerHTML=`<div class="error">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='Find Today\'s Plays';
+}
+
+function updateStrip(d){
+  if(!d.spyPrice) return;
+  const isBull=d.spyTrend==='BULLISH';
+  document.getElementById('mSpy').textContent='$'+parseFloat(d.spyPrice).toFixed(2);
+  document.getElementById('mSpy').className='mstrip-val '+(isBull?'bull':'bear');
+  document.getElementById('mTrend').textContent=d.spyTrend||'—';
+  document.getElementById('mTrend').className='mstrip-val '+(isBull?'bull':'bear');
+  document.getElementById('mVix').textContent=d.vix||'—';
+  document.getElementById('mVix').className='mstrip-val '+(parseFloat(d.vix||0)<20?'bull':parseFloat(d.vix||0)<30?'neutral':'bear');
+  document.getElementById('mPlay').textContent=isBull?'CALLS':'PUTS';
+  document.getElementById('mPlay').className='mstrip-val '+(isBull?'bull':'bear');
+  document.getElementById('liveLabel').textContent='live data connected';
+}
+
+function renderScan(d){
+  const picks=d.picks||[];
+  if(!picks.length){
+    document.getElementById('scanOut').innerHTML=`<div class="card"><div style="font-size:15px;font-weight:600;margin-bottom:6px">No setups today</div><p style="color:var(--muted);font-size:13px">${d.market_summary||'No tickers passed all filters. Try again later or check the Any Ticker tab.'}</p>${d.tickers_scanned?`<p style="color:var(--muted2);font-size:12px;margin-top:10px">Scanned ${d.tickers_scanned} tickers → ${d.stage1_passed||0} passed Stage 1 → ${d.stage2_passed||0} passed Stage 2</p>`:''}` +'</div>';
+    return;
+  }
+
+  let html=`<div class="card" style="margin-bottom:16px"><div style="font-size:13px;color:var(--muted)">${d.market_summary||''}</div>${d.tickers_scanned?`<div style="font-size:11px;color:var(--muted2);margin-top:8px">Scanned ${d.tickers_scanned} tickers → ${d.stage1_passed} passed Stage 1 → ${d.stage2_passed} passed Stage 2</div>`:''}</div>`;
+
+  picks.forEach((p,i)=>{
+    const isCall=p.type==='CALL';
+    const confClass=p.confidence==='HIGH'?'badge-high':'badge-med';
+    const riskColor=p.risk_score<35?'var(--green)':p.risk_score<65?'var(--amber)':'var(--red)';
+    const hrHtml=p.historical_rating&&p.historical_rating!=='NEUTRAL'?`<span class="pick-badge badge-hot">${p.historical_rating}</span>`:'';
+
+    html+=`<div class="pick ${i===0?'open':''}" id="pick-${i}">
+      <div class="pick-header" onclick="togglePick(${i})">
+        <div>
+          <div class="pick-sym">${p.sym}</div>
+          <div class="pick-name">${p.name||''} · ${p.sector||''}</div>
+        </div>
+        ${hrHtml}
+        <span class="pick-badge ${p.verdict==='BUY'?'badge-buy':'badge-skip'}">${p.verdict||'BUY'}</span>
+        <span class="pick-badge ${confClass}">${p.confidence||'MEDIUM'}</span>
+        <div class="pick-price">$${p.price}</div>
+      </div>
+      <div class="pick-body">
+        <div class="action-box"><strong style="color:var(--brand)">What to do:</strong> ${p.what_to_do||''}</div>
+        <div class="why-box"><strong style="color:var(--amber)">Why this trade:</strong> ${p.why||''}</div>
+        <div class="trade-grid">
+          <div class="tg-item"><div class="tg-label">Buy this</div><div class="tg-val" style="color:${isCall?'var(--green)':'var(--red)'}">${p.type} $${p.strike}</div><div style="font-size:11px;color:var(--muted)">${p.expiry||''}</div></div>
+          <div class="tg-item"><div class="tg-label">Pay around</div><div class="tg-val">$${p.est_premium}/contract</div><div style="font-size:11px;color:var(--muted)">$${p.cost_per_contract} total</div></div>
+          <div class="tg-item"><div class="tg-label">Sell when hits</div><div class="tg-val" style="color:var(--green)">$${p.sell_at_premium}</div><div style="font-size:11px;color:var(--muted)">stock at ~$${p.stock_target}</div></div>
+          <div class="tg-item"><div class="tg-label">Exit (stop loss)</div><div class="tg-val" style="color:var(--red)">$${p.stop_at_premium}</div><div style="font-size:11px;color:var(--muted)">stock at ~$${p.stock_stop}</div></div>
+          <div class="tg-item"><div class="tg-label">Potential gain</div><div class="tg-val" style="color:var(--green)">+100%</div><div style="font-size:11px;color:var(--muted)">doubles your money</div></div>
+          <div class="tg-item"><div class="tg-label">Max loss</div><div class="tg-val" style="color:var(--red)">-50%</div><div style="font-size:11px;color:var(--muted)">if stop hit</div></div>
+        </div>
+        <div class="flags">
+          <div class="flag-box flag-green"><div class="flag-title g">✓ Green flags</div>${(p.green_flags||[]).map(f=>`<div class="flag-item">${f}</div>`).join('')}</div>
+          <div class="flag-box flag-red"><div class="flag-title r">⚠ Red flags</div>${(p.red_flags||[]).map(f=>`<div class="flag-item">${f}</div>`).join('')}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px"><span>Risk level</span><span style="color:${riskColor}">${p.risk_score||50}/100</span></div>
+          <div class="risk-bar"><div class="risk-fill" style="width:${p.risk_score||50}%;background:${riskColor}"></div></div>
+        </div>
+        <button class="journal-btn" onclick="addToJournal(${JSON.stringify(p).replace(/"/g,'&quot;')})">+ Add to journal — simulate 1 contract ($${p.cost_per_contract||180})</button>
+        <div class="disc">Educational analysis using real Polygon data. Not financial advice. Verify all prices on your broker before placing any trade.</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('scanOut').innerHTML=html;
+}
+
+function togglePick(i){
+  document.getElementById('pick-'+i).classList.toggle('open');
+}
+
+// ── ANALYZE ────────────────────────────────────────────────────────────────
+async function runAnalyze(){
+  const sym=document.getElementById('analyzeInput').value.trim().toUpperCase();
+  if(!sym)return;
+  const btn=document.getElementById('analyzeBtn');
+  btn.disabled=true;btn.textContent='Analyzing...';
+  document.getElementById('analyzeOut').innerHTML=`<div class="loading"><div class="spin"></div><p style="color:var(--muted)">Fetching real Polygon data for ${sym}...<br>Running AI analysis</p></div>`;
+  try{
+    const r=await fetch(`${BASE}/api/analyze`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sym})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    renderAnalyze(d);
+  }catch(e){
+    document.getElementById('analyzeOut').innerHTML=`<div class="error">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='Analyze';
+}
+
+function renderAnalyze(p){
+  const isCall=p.type==='CALL';
+  const riskColor=p.risk_score<35?'var(--green)':p.risk_score<65?'var(--amber)':'var(--red)';
+  const confClass=p.confidence==='HIGH'?'badge-high':'badge-med';
+  document.getElementById('analyzeOut').innerHTML=`
+    <div class="pick open">
+      <div class="pick-header">
+        <div><div class="pick-sym">${p.sym}</div><div class="pick-name">${p.name||''} · ${p.sector||''}</div></div>
+        <span class="pick-badge ${p.verdict==='BUY'?'badge-buy':'badge-skip'}">${p.verdict||'SKIP'}</span>
+        <span class="pick-badge ${confClass}">${p.confidence||'MEDIUM'}</span>
+        <div class="pick-price">$${p.price}</div>
+      </div>
+      <div class="pick-body" style="display:block">
+        <div class="action-box"><strong style="color:var(--brand)">What to do:</strong> ${p.what_to_do||''}</div>
+        <div class="why-box"><strong style="color:var(--amber)">Why this trade:</strong> ${p.why||''}</div>
+        <div class="trade-grid">
+          <div class="tg-item"><div class="tg-label">Buy this</div><div class="tg-val" style="color:${isCall?'var(--green)':'var(--red)'}">${p.type} $${p.strike}</div><div style="font-size:11px;color:var(--muted)">${p.expiry||''}</div></div>
+          <div class="tg-item"><div class="tg-label">Pay around</div><div class="tg-val">$${p.est_premium}/contract</div><div style="font-size:11px;color:var(--muted)">$${p.cost_per_contract} total</div></div>
+          <div class="tg-item"><div class="tg-label">Sell when hits</div><div class="tg-val" style="color:var(--green)">$${p.sell_at_premium}</div></div>
+          <div class="tg-item"><div class="tg-label">Exit stop loss</div><div class="tg-val" style="color:var(--red)">$${p.stop_at_premium}</div></div>
+          <div class="tg-item"><div class="tg-label">Stock target</div><div class="tg-val">$${p.stock_target}</div></div>
+          <div class="tg-item"><div class="tg-label">Stock stop</div><div class="tg-val">$${p.stock_stop}</div></div>
+        </div>
+        ${p.sizing?`<div class="card-title" style="margin-top:4px">Position sizing (5% rule)</div>
+        <div class="g3" style="margin-bottom:14px">
+          <div class="tg-item"><div class="tg-label">$5K account</div><div class="tg-val">${p.sizing.account_5k?.contracts} contract</div><div style="font-size:11px;color:var(--red)">max loss $${p.sizing.account_5k?.max_loss}</div></div>
+          <div class="tg-item"><div class="tg-label">$10K account</div><div class="tg-val">${p.sizing.account_10k?.contracts} contracts</div><div style="font-size:11px;color:var(--red)">max loss $${p.sizing.account_10k?.max_loss}</div></div>
+          <div class="tg-item"><div class="tg-label">$25K account</div><div class="tg-val">${p.sizing.account_25k?.contracts} contracts</div><div style="font-size:11px;color:var(--red)">max loss $${p.sizing.account_25k?.max_loss}</div></div>
+        </div>`:''}
+        <div class="flags">
+          <div class="flag-box flag-green"><div class="flag-title g">✓ Green flags</div>${(p.green_flags||[]).map(f=>`<div class="flag-item">${f}</div>`).join('')}</div>
+          <div class="flag-box flag-red"><div class="flag-title r">⚠ Red flags</div>${(p.red_flags||[]).map(f=>`<div class="flag-item">${f}</div>`).join('')}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px"><span>Risk level</span><span style="color:${riskColor}">${p.risk_score||50}/100</span></div>
+          <div class="risk-bar"><div class="risk-fill" style="width:${p.risk_score||50}%;background:${riskColor}"></div></div>
+        </div>
+        <button class="journal-btn" onclick="addToJournal(${JSON.stringify(p).replace(/"/g,'&quot;')})">+ Add to journal — simulate 1 contract ($${p.cost_per_contract||180})</button>
+        <div class="disc">Educational analysis using real Polygon data. Not financial advice.</div>
+      </div>
+    </div>`;
+}
+
+// ── JOURNAL ────────────────────────────────────────────────────────────────
+function addToJournal(p){
+  const trade={id:Date.now(),sym:p.sym,type:p.type,strike:p.strike,expiry:p.expiry,entry_date:new Date().toISOString().split('T')[0],entry_premium:p.est_premium,cost:p.cost_per_contract,sell_at:p.sell_at_premium,stop_at:p.stop_at_premium,stock_target:p.stock_target,stock_stop:p.stock_stop,entry_price:parseFloat(p.price),status:'OPEN',pnl:0};
+  journal.push(trade);
+  localStorage.setItem('pet_journal',JSON.stringify(journal));
+  renderJournal();
+  alert(`Added ${p.sym} ${p.type} to journal!`);
+}
+
+function closeJournalTrade(id,outcome){
+  const t=journal.find(j=>j.id===id);
+  if(!t)return;
+  t.status=outcome;
+  t.exit_date=new Date().toISOString().split('T')[0];
+  t.pnl=outcome==='WIN'?(t.cost||180):outcome==='LOSS'?-(t.cost||180)*0.5:-(t.cost||180);
+  localStorage.setItem('pet_journal',JSON.stringify(journal));
+  // Log to learning system
+  fetch(`${BASE}/api/outcomes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'log',trade:{sym:t.sym,type:t.type,outcome,entry_date:t.entry_date,exit_date:t.exit_date,pnl_pct:outcome==='WIN'?100:outcome==='LOSS'?-50:-100,market_trend:spyData.trend||'UNKNOWN'}})}).catch(()=>{});
+  renderJournal();
+}
+
+function renderJournal(){
+  const wins=journal.filter(j=>j.status==='WIN').length;
+  const losses=journal.filter(j=>j.status==='LOSS'||j.status==='EXPIRED').length;
+  const total=wins+losses;
+  const open=journal.filter(j=>j.status==='OPEN').length;
+  const pnl=journal.reduce((s,j)=>s+(j.pnl||0),0);
+  document.getElementById('jTotal').textContent=journal.length;
+  document.getElementById('jWR').textContent=total>0?((wins/total)*100).toFixed(0)+'%':'—';
+  document.getElementById('jWR').style.color=wins>losses?'var(--green)':wins<losses?'var(--red)':'var(--text)';
+  document.getElementById('jPnl').textContent=(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(0);
+  document.getElementById('jPnl').style.color=pnl>=0?'var(--green)':'var(--red)';
+  document.getElementById('jOpen').textContent=open;
+
+  if(!journal.length){document.getElementById('jTable').innerHTML=`<div class="empty"><div class="empty-icon">📓</div><div class="empty-title">No trades yet</div><div style="font-size:12px;color:var(--muted2);margin-top:6px">Add trades from the Daily Scan or Any Ticker tabs</div></div>`;return;}
+
+  let html=`<table class="j-table"><thead><tr><th>Ticker</th><th>Trade</th><th>Entry date</th><th>Cost</th><th>Status</th><th>P&L</th><th></th></tr></thead><tbody>`;
+  [...journal].reverse().forEach(t=>{
+    const tagClass=t.status==='OPEN'?'tag-open':t.status==='WIN'?'tag-win':'tag-loss';
+    const pnlColor=t.pnl>0?'var(--green)':t.pnl<0?'var(--red)':'var(--muted)';
+    html+=`<tr>
+      <td style="font-weight:700;font-family:var(--mono)">${t.sym}</td>
+      <td>${t.type} $${t.strike} · ${t.expiry||''}</td>
+      <td style="color:var(--muted)">${t.entry_date||''}</td>
+      <td>$${t.cost||180}</td>
+      <td><span class="tag ${tagClass}">${t.status}</span></td>
+      <td style="font-family:var(--mono);color:${pnlColor}">${t.pnl!==0?(t.pnl>0?'+$':'-$')+Math.abs(t.pnl).toFixed(0):'—'}</td>
+      <td>${t.status==='OPEN'?`<button class="btn btn-sm btn-green" style="margin-right:4px" onclick="closeJournalTrade(${t.id},'WIN')">Win</button><button class="btn btn-sm btn-red" onclick="closeJournalTrade(${t.id},'LOSS')">Loss</button>`:'<button class="btn btn-sm btn-ghost" onclick="removeJournal('+t.id+')">×</button>'}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('jTable').innerHTML=html;
+}
+
+function removeJournal(id){
+  journal=journal.filter(j=>j.id!==id);
+  localStorage.setItem('pet_journal',JSON.stringify(journal));
+  renderJournal();
+}
+
+function clearJournal(){
+  if(confirm('Clear all journal entries?')){journal=[];localStorage.setItem('pet_journal','[]');renderJournal();}
+}
+
+// ── ALERTS ─────────────────────────────────────────────────────────────────
+async function runAlerts(){
+  const openPositions=journal.filter(j=>j.status==='OPEN').map(j=>({sym:j.sym,type:j.type,entry_price:j.entry_price,stock_target:j.stock_target,stock_stop:j.stock_stop}));
+  if(!openPositions.length){document.getElementById('alertOut').innerHTML=`<div class="info">No open positions in your journal. Add trades from the Daily Scan to start getting alerts.</div>`;return;}
+  const btn=document.getElementById('alertBtn');
+  btn.disabled=true;btn.textContent='Checking prices...';
+  document.getElementById('alertOut').innerHTML=`<div class="loading"><div class="spin"></div><p style="color:var(--muted)">Fetching live prices for ${openPositions.length} open position${openPositions.length>1?'s':''}...</p></div>`;
+  try{
+    const r=await fetch(`${BASE}/api/alert`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({positions:openPositions})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    renderAlerts(d);
+  }catch(e){
+    document.getElementById('alertOut').innerHTML=`<div class="error">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='Check my positions now';
+}
+
+function renderAlerts(d){
+  if(!d.alerts||!d.alerts.length){document.getElementById('alertOut').innerHTML=`<div class="info">Checked ${d.checked} positions. No price data available — markets may be closed.</div>`;return;}
+  let html=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Checked ${d.checked} positions at ${new Date(d.timestamp).toLocaleTimeString()}</div>`;
+  d.alerts.forEach(a=>{
+    const cls=a.urgency==='HIGH'?'alert-high':a.urgency==='MEDIUM'?'alert-med':'alert-low';
+    html+=`<div class="alert-card ${cls}"><strong>${a.sym}</strong> — ${a.message}<div style="font-size:11px;color:var(--muted);margin-top:4px">Current: $${a.current_price?.toFixed(2)} · Entry: $${a.entry_price?.toFixed(2)} · Change: ${a.pct_change}%</div></div>`;
+  });
+  document.getElementById('alertOut').innerHTML=html;
+}
+
+// ── BACKTEST ───────────────────────────────────────────────────────────────
+async function runBacktest(){
+  const months=parseInt(document.getElementById('btMonths').value);
+  const btn=document.getElementById('btBtn');
+  btn.disabled=true;btn.textContent='Running...';
+  document.getElementById('btOut').innerHTML=`<div class="loading"><div class="spin"></div><p style="color:var(--muted)">Fetching ${months} month${months>1?'s':''} of Polygon data...<br>Running MA crossover signals across 25 tickers<br>Takes 15-25 seconds</p></div>`;
+  try{
+    const r=await fetch(`${BASE}/api/backtest`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({months})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    renderBacktest(d);
+  }catch(e){
+    document.getElementById('btOut').innerHTML=`<div class="error">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false;btn.textContent='Run Backtest';
+}
+
+function renderBacktest(d){
+  const s=d.summary;
+  const wr=parseFloat(s.win_rate);
+  const ret=parseFloat(s.return_pct);
+  const wrColor=wr>=50?'var(--green)':wr>=40?'var(--amber)':'var(--red)';
+  const retColor=ret>=0?'var(--green)':'var(--red)';
+
+  // Equity curve SVG
+  let curveSvg='';
+  const curve=d.equity_curve||[];
+  if(curve.length>1){
+    const bals=curve.map(p=>p.balance);
+    const minB=Math.min(...bals),maxB=Math.max(...bals),range=maxB-minB||1;
+    const W=800,H=120;
+    const pts=curve.map((p,i)=>{const x=(i/(curve.length-1))*W;const y=H-((p.balance-minB)/range)*(H-10)-5;return `${x},${y}`;}).join(' ');
+    const startY=H-((1000-minB)/range)*(H-10)-5;
+    curveSvg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px"><line x1="0" y1="${startY}" x2="${W}" y2="${startY}" stroke="var(--border2)" stroke-width="1" stroke-dasharray="4"/><polyline points="${pts}" fill="none" stroke="${ret>=0?'var(--green)':'var(--red)'}" stroke-width="2"/><text x="4" y="12" font-size="10" fill="var(--muted)">$${Math.round(maxB)}</text><text x="4" y="${H-2}" font-size="10" fill="var(--muted)">$${Math.round(minB)}</text></svg>`;
+  }
+
+  const tPerf=(d.ticker_performance||[]).slice(0,8).map(t=>{
+    const c=parseFloat(t.win_rate)>=50?'var(--green)':parseFloat(t.win_rate)>=40?'var(--amber)':'var(--red)';
+    return `<div class="tp-card"><div><div class="tp-sym">${t.sym}</div><div class="tp-trades">${t.trades} trades</div></div><div class="tp-wr" style="color:${c}">${t.win_rate}%</div></div>`;
+  }).join('');
+
+  const mBreak=(d.monthly_breakdown||[]).map(m=>{
+    const wr2=parseFloat(m.win_rate);
+    const c=wr2>=50?'var(--green)':wr2>=40?'var(--amber)':'var(--red)';
+    const ml=new Date(m.month+'-15').toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+    return `<div class="mo-card"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">${ml}</div><div style="font-size:16px;font-weight:700;color:${c};font-family:var(--mono)">${m.win_rate}%</div><div style="font-size:11px;color:var(--muted)">${m.trades} trades · ${m.wins} wins</div></div>`;
+  }).join('');
+
+  const trades=(d.recent_trades||[]).slice(-10).reverse().map(t=>{
+    const c=t.outcome==='WIN'?'var(--green)':t.outcome==='PARTIAL'?'var(--amber)':'var(--red)';
+    const pl=t.outcome==='WIN'?'+100%':t.outcome==='PARTIAL'?'+15%':t.pnl==='-50'||t.pnl===-50?'-50%':'-100%';
+    return `<tr><td style="color:var(--muted);font-size:12px">${t.date}</td><td style="font-weight:700;font-family:var(--mono)">${t.sym}</td><td style="font-size:12px">${t.type} $${t.strike}</td><td style="font-size:12px;color:var(--muted)">$${t.price}</td><td style="font-weight:600;color:${c}">${pl}</td></tr>`;
+  }).join('');
+
+  document.getElementById('btOut').innerHTML=`
+    <div class="g4" style="margin-bottom:14px">
+      <div class="stat"><div class="stat-l">Win rate</div><div class="stat-v" style="color:${wrColor}">${s.win_rate}%</div></div>
+      <div class="stat"><div class="stat-l">Total trades</div><div class="stat-v">${s.total_trades}</div></div>
+      <div class="stat"><div class="stat-l">$1,000 grew to</div><div class="stat-v" style="color:${retColor}">$${s.ending_balance?.toLocaleString()}</div></div>
+      <div class="stat"><div class="stat-l">Total return</div><div class="stat-v" style="color:${retColor}">${ret>=0?'+':''}${s.return_pct}%</div></div>
+    </div>
+    <div class="warn" style="margin-bottom:14px"><strong style="color:var(--amber)">AI analysis:</strong> ${d.insight||''}</div>
+    ${curveSvg?`<div class="card" style="margin-bottom:12px"><div class="card-title">Equity curve — $1,000 account</div>${curveSvg}<div style="font-size:11px;color:var(--muted2);margin-top:6px">Dashed line = $1,000 start. Each trade uses 5% of account.</div></div>`:''}
+    ${tPerf?`<div class="card" style="margin-bottom:12px"><div class="card-title">Ticker performance</div><div class="tp-grid">${tPerf}</div></div>`:''}
+    ${mBreak?`<div class="card" style="margin-bottom:12px"><div class="card-title">Month by month</div><div class="mo-grid">${mBreak}</div></div>`:''}
+    ${trades?`<div class="card"><div class="card-title">Recent signals</div><table class="j-table"><thead><tr><th>Date</th><th>Ticker</th><th>Trade</th><th>Price</th><th>Result</th></tr></thead><tbody>${trades}</tbody></table></div>`:''}
+    ${d.debug?`<div style="font-size:11px;color:var(--muted2);margin-top:10px">Debug — bars fetched: ${d.debug.join(' · ')}</div>`:''}
+    <div style="font-size:11px;color:var(--muted2);margin-top:10px">Backtesting uses real Polygon historical price data. Premiums estimated via simplified model. Assumes perfect execution at open. Actual trading results will differ. Educational only.</div>`;
+}
+
+// ── LEARNING ───────────────────────────────────────────────────────────────
+async function loadLearning(){
+  document.getElementById('learningOut').innerHTML=`<div class="loading"><div class="spin"></div><p style="color:var(--muted)">Loading performance data...</p></div>`;
+  try{
+    const r=await fetch(`${BASE}/api/outcomes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'scores'})});
+    const d=await r.json();
+    renderLearning(d);
+  }catch(e){
+    document.getElementById('learningOut').innerHTML=`<div class="error">Error: ${e.message}</div>`;
+  }
+}
+
+function renderLearning(d){
+  if(!d.has_kv){
+    document.getElementById('learningOut').innerHTML=`<div class="warn"><strong style="color:var(--amber)">KV database not configured</strong><br><br>To enable persistent learning across sessions:<br>1. Go to <strong>vercel.com</strong> → your project → <strong>Storage</strong><br>2. Click <strong>Create Database → KV</strong><br>3. Connect it to your project<br>4. Vercel auto-adds the environment variables<br>5. Redeploy — learning persists immediately<br><br>Until then, outcomes you log will influence the scan within this session only.</div>`;
+    return;
+  }
+
+  const sc=d.ticker_scores||{};
+  const hot=Object.values(sc).filter(s=>s.rating==='HOT'||s.rating==='WARM').sort((a,b)=>parseFloat(b.win_rate)-parseFloat(a.win_rate));
+  const cold=Object.values(sc).filter(s=>s.rating==='COLD'||s.rating==='AVOID').sort((a,b)=>parseFloat(a.win_rate)-parseFloat(b.win_rate));
+
+  let html=`<div class="g3" style="margin-bottom:12px">
+    <div class="stat"><div class="stat-l">Outcomes logged</div><div class="stat-v">${d.total_outcomes||0}</div></div>
+    <div class="stat"><div class="stat-l">Overall win rate</div><div class="stat-v ${parseFloat(d.overall_win_rate||0)>=50?'bull':'bear'}">${d.overall_win_rate||'—'}%</div></div>
+    <div class="stat"><div class="stat-l">Recent (last 30)</div><div class="stat-v ${parseFloat(d.recent_win_rate||0)>=50?'bull':'bear'}">${d.recent_win_rate||'—'}%</div></div>
+  </div>`;
+
+  if(hot.length) html+=`<div class="card" style="margin-bottom:12px"><div class="card-title" style="color:var(--green)">🔥 Hot tickers — scan prioritizes these</div><div class="tp-grid">${hot.map(s=>`<div class="score-card score-hot"><div><div class="tp-sym">${s.sym}</div><div class="tp-trades">${s.trades} trades</div></div><div><div class="tp-wr" style="color:var(--green)">${s.win_rate}%</div><div style="font-size:10px;color:var(--green)">${s.rating}</div></div></div>`).join('')}</div></div>`;
+
+  if(cold.length) html+=`<div class="card" style="margin-bottom:12px"><div class="card-title" style="color:var(--red)">❄️ Cold tickers — scan skips these</div><div class="tp-grid">${cold.map(s=>`<div class="score-card score-cold"><div><div class="tp-sym">${s.sym}</div><div class="tp-trades">${s.trades} trades</div></div><div><div class="tp-wr" style="color:var(--red)">${s.win_rate}%</div><div style="font-size:10px;color:var(--red)">${s.rating}</div></div></div>`).join('')}</div></div>`;
+
+  if(d.market_conditions?.bullish_win_rate||d.market_conditions?.bearish_win_rate){
+    html+=`<div class="card" style="margin-bottom:12px"><div class="card-title">Win rate by market condition</div><div class="g2">
+      ${d.market_conditions.bullish_win_rate?`<div class="stat"><div class="stat-l">Bullish markets</div><div class="stat-v bull">${d.market_conditions.bullish_win_rate}%</div></div>`:''}
+      ${d.market_conditions.bearish_win_rate?`<div class="stat"><div class="stat-l">Bearish markets</div><div class="stat-v bear">${d.market_conditions.bearish_win_rate}%</div></div>`:''}
+    </div></div>`;
+  }
+
+  if(!d.total_outcomes) html+=`<div class="info">No outcomes logged yet. Take a trade from the Daily Scan, then come back and log whether it won or lost. After 10+ outcomes the system starts adapting automatically.</div>`;
+
+  document.getElementById('learningOut').innerHTML=html;
+}
+
+async function logOutcome(){
+  const sym=document.getElementById('loSym').value.trim().toUpperCase();
+  const type=document.getElementById('loType').value;
+  const outcome=document.getElementById('loOutcome').value;
+  const date=document.getElementById('loDate').value;
+  const pnl=document.getElementById('loPnl').value;
+  if(!sym){document.getElementById('loMsg').textContent='Enter a ticker';return;}
+  const btn=document.getElementById('loBtn');
+  btn.disabled=true;btn.textContent='Logging...';
+  try{
+    const r=await fetch(`${BASE}/api/outcomes`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'log',trade:{sym,type,outcome,entry_date:date,pnl_pct:parseFloat(pnl)||0,market_trend:spyData.trend||'UNKNOWN'}})});
+    const d=await r.json();
+    if(d.error)throw new Error(d.error);
+    document.getElementById('loMsg').textContent='✓ Logged! Learning system updated.';
+    document.getElementById('loSym').value='';
+    setTimeout(()=>{document.getElementById('loMsg').textContent='';},3000);
+    loadLearning();
+  }catch(e){
+    document.getElementById('loMsg').textContent='Error: '+e.message;
+  }
+  btn.disabled=false;btn.textContent='Log outcome';
+}
+</script>
+</body>
+</html>
