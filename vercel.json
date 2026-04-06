@@ -1,12 +1,12 @@
 {
   "version": 2,
   "routes": [
-    { "src": "/api/scan",     "dest": "/api/scan.js" },
-    { "src": "/api/analyze",  "dest": "/api/analyze.js" },
-    { "src": "/api/backtest", "dest": "/api/backtest.js" },
-    { "src": "/api/outcomes", "dest": "/api/outcomes.js" },
-    { "src": "/api/alert",    "dest": "/api/alert.js" },
-    { "src": "/",             "dest": "/index.html" },
-    { "src": "/index.html",   "dest": "/index.html" }
+    { "src": "/api/scan", "dest": "/scan.js" },
+    { "src": "/api/analyze", "dest": "/analyze.js" },
+    { "src": "/api/backtest", "dest": "/backtest.js" },
+    { "src": "/api/outcomes", "dest": "/outcomes.js" },
+    { "src": "/api/alert", "dest": "/alert.js" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/index.html", "dest": "/index.html" }
   ]
 }
